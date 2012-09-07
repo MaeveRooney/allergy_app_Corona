@@ -42,7 +42,7 @@ local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableCon
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test1.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local restaurantTableNew = {}  -- starts off emtpy
@@ -197,6 +197,7 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
+    local group = self.view
     print("entering")
 
 end

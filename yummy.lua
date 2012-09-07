@@ -26,23 +26,28 @@ local ui = require("ui")
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
 
-local myList, backBtn, detailScreenText, goBackSearch
+local myList, backBtn, detailScreenText, goBackSearch, data, navBar, navHeader
 
 local w,h = display.contentWidth, display.contentHeight
 
-local function goToSearch(event)
+local topBoundary = display.screenOriginY + 40
+local bottomBoundary = display.screenOriginY + 0
+
+
+function goToSearch( event )
     local options = {effect = "fade", time = 400 }
     storyboard.gotoScene( "search", options)
 end
 
+
 --initial values
-local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableContentWidth, display.contentHeight - display.viewableContentHeight
+local screenOffsetW, screenOffsetH = w -  display.viewableContentWidth, h - display.viewableContentHeight
 
 
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test1.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local restaurantTableNew = {}  -- starts off emtpy
@@ -64,9 +69,10 @@ end
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
+    print('creating')
     local group = self.view
 
-    local background = display.newRect(0, 0, display.contentWidth, display.contentHeight)
+    local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
     group:insert(background)
 
@@ -74,16 +80,16 @@ function scene:createScene( event )
     local detailScreen = display.newGroup()
     group:insert(detailScreen)
 
-    local detailBg = display.newRect(0,0,display.contentWidth,display.contentHeight-display.screenOriginY)
+    local detailBg = display.newRect(0,0,w,h-display.screenOriginY)
     detailBg:setFillColor(255,255,255)
     detailScreen:insert(detailBg)
 
     detailScreenText = display.newText("You tapped item", 0, 0, native.systemFontBold, 24)
     detailScreenText:setTextColor(0, 0, 0)
     detailScreen:insert(detailScreenText)
-    detailScreenText.x = math.floor(display.contentWidth/2)
-    detailScreenText.y = math.floor(display.contentHeight/2)
-    detailScreen.x = display.contentWidth
+    detailScreenText.x = math.floor(w/2)
+    detailScreenText.y = math.floor(h/2)
+    detailScreen.x = w
 
     --setup functions to execute on touch of the list view items
     function listButtonRelease( event )
@@ -94,10 +100,8 @@ function scene:createScene( event )
 
         backBtn.alpha = 1
 
-        transition.to(myList, {time=400, x=display.contentWidth*-1, transition=easing.outExpo })
+        transition.to(myList, {time=400, x=w*-1, transition=easing.outExpo })
         transition.to(detailScreen, {time=400, x=0, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, x=math.floor(backBtn.width/2) + screenOffsetW*.5 + 6, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, alpha=1 })
 
 
         delta, velocity = 0, 0
@@ -105,13 +109,9 @@ function scene:createScene( event )
 
     function backBtnRelease( event )
         print("back button released")
-
+        backBtn.alpha = 0
         transition.to(myList, {time=400, x=0, transition=easing.outExpo })
-        transition.to(detailScreen, {time=400, x=display.contentWidth, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, x=math.floor(backBtn.width/2)+backBtn.width, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, alpha=0 })
-
-
+        transition.to(detailScreen, {time=400, x=w, transition=easing.outExpo })
         delta, velocity = 0, 0
     end
 
@@ -125,9 +125,6 @@ function scene:createScene( event )
         data[i].image = restaurantTableNew[i].image
     end
 
-    local topBoundary = display.screenOriginY + 40
-    local bottomBoundary = display.screenOriginY + 0
-
     -- create the list of items
     myList = tableView.newList{
         data=data,
@@ -139,7 +136,7 @@ function scene:createScene( event )
         backgroundColor={ 255, 255, 255 },
         callback=function(row)
                 local g = display.newGroup()
-                
+
                 local img = display.newImage(row.image)
                 g:insert(img)
                 img.width = 80
@@ -164,14 +161,14 @@ function scene:createScene( event )
     group:insert(myList)
 
     --Setup the nav bar
-    local navBar = display.newImage("navBar.png", 0, 0, true)
-    navBar.x = display.contentWidth*.5
+    navBar = display.newImage("navBar.png", 0, 0, true)
+    navBar.x = w*.5
     navBar.y = math.floor(display.screenOriginY + navBar.height*0.5)
     group:insert(navBar)
 
-    local navHeader = display.newText("Yummy Search Results", 0, 0, native.systemFontBold, 16)
+    navHeader = display.newText("Yummy Search Results", 0, 0, native.systemFontBold, 16)
     navHeader:setTextColor(255, 255, 255)
-    navHeader.x = display.contentWidth*.5 + 30
+    navHeader.x = w*.5 + 30
     navHeader.y = navBar.y
     group:insert(navHeader)
 
@@ -181,7 +178,7 @@ function scene:createScene( event )
         over = "backButton_over.png",
         onRelease = backBtnRelease
     }
-    backBtn.x = math.floor(backBtn.width/2) + backBtn.width + screenOffsetW
+    backBtn.x = 50
     backBtn.y = navBar.y
     backBtn.alpha = 0
     group:insert(backBtn)
@@ -198,25 +195,30 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
+    local group = self.view
     print("entering")
+
+    storyboard.removeScene( "search" )
 
 end
 
 
 -- Called when scene is about to move offscreen:
 function scene:exitScene()
-
+    print('leaving')
 
 end
 
 function scene:didExitScene( event )
-    storyboard.purgeScene( "yummy" )
+    storyboard.removeScene( "yummy" )
+    print('exiting')
 end
 
 
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
     local group = self.view
+    print ('destroying')
 
     -----------------------------------------------------------------------------
 

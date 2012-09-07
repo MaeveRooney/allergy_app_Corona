@@ -9,13 +9,13 @@ storyboard.gotoScene( "home" )
 --
 require "sqlite3"
 
-local path = system.pathForFile( "test1.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local tablesetup1 = [[CREATE TABLE IF NOT EXISTS restaurant (id INTEGER PRIMARY KEY autoincrement, name text unique not null, avgYummy num, avgValue num, address text, image text, website text unique);]]
 db:exec( tablesetup1 )
 
-local tablesetup2 = [[CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY autoincrement, name text unique not null, wheat int, gluten int, dairy int));]]
+local tablesetup2 = [[CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY autoincrement, name text not null, email unique not null, wheat text, gluten text, dairy text);]]
 db:exec( tablesetup2 )
 
 
@@ -60,7 +60,7 @@ for i=1,#restaurantTable do
     db:exec( q )
 end
 
-local insertQuery = [[INSERT INTO user VALUES (NULL, 'Maeve Rooney',1,0,0); ]]
+local insertQuery = [[INSERT INTO user VALUES (NULL, 'Maeve Rooney','maeve.rooney@gmail.com', 'Yes', 'No', 'No'); ]]
 db:exec( insertQuery )
 
 local function onSystemEvent( event )
