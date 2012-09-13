@@ -1,45 +1,74 @@
-display.setStatusBar(display.HiddenStatusBar); 		--hide the status bar
+display.setStatusBar(display.HiddenStatusBar);      --hide the status bar
 
 local storyboard = require "storyboard"
 local widget = require "widget"
+local ui = require("ui")
 
--- load scenetemplate.lua
-storyboard.gotoScene( "home" )
+storyboard.state = {}
 
 
 -- Display objects added below will not respond to storyboard transitions
 
 -- create buttons table for the tab bar
-local tabButtons = {
-	{
-		label="home",
-		default="assets/tabIcon.png",
-		down="assets/tabIcon-down.png",
-		width=32, height=32,
-		onPress=function() storyboard.gotoScene( "home" ); end,
-		selected=true
-	},
-	{
-		label="Search",
-		default="assets/tabIcon.png",
-		down="assets/tabIcon-down.png",
-		width=32, height=32,
-		onPress=function() storyboard.gotoScene( "search" ); end,
-	},
-	{
-		label="My Account",
-		default="assets/tabIcon.png",
-		down="assets/tabIcon-down.png",
-		width=32, height=32,
-		onPress=function() storyboard.gotoScene( "account" ); end,
-	}
+storyboard.state.tabButtons = {
+    {
+        label="Home",
+        default="assets/tabIcon.png",
+        down="assets/tabIcon-down.png",
+        width=32, height=32,
+        onPress=function() storyboard.gotoScene( "home" ); end,
+        selected=true
+    },
+    {
+        label="Search",
+        default="assets/tabIcon.png",
+        down="assets/tabIcon-down.png",
+        width=32, height=32,
+        onPress=function() storyboard.gotoScene( "search" ); end,
+    },
+    {
+        label="My Account",
+        default="assets/tabIcon.png",
+        down="assets/tabIcon-down.png",
+        width=32, height=32,
+        onPress=function() storyboard.gotoScene( "account" ); end,
+    }
 }
 
 -- create a tab-bar and place it at the bottom of the screen
 local demoTabs = widget.newTabBar{
-	top=display.contentHeight-50,
-	buttons=tabButtons
+    top=display.contentHeight-50,
+    buttons=storyboard.state.tabButtons
 }
+
+--Setup the nav bar
+local navBar = display.newImage("navBar.png", 0, 0, true)
+navBar.x = display.contentWidth*.5
+navBar.y = math.floor(display.screenOriginY + navBar.height*0.5)
+
+storyboard.state.navHeader = display.newText("Home", 0, 0, native.systemFontBold, 16)
+storyboard.state.navHeader:setTextColor(255, 255, 255)
+storyboard.state.navHeader.x = navBar.x
+storyboard.state.navHeader.y = navBar.y
+
+storyboard.state.previousScene = "home"
+
+--Setup the back button
+storyboard.state.backBtn = ui.newButton{
+    default = "backButton.png",
+    over = "backButton_over.png",
+    onRelease = function() storyboard.gotoScene( storyboard.state.previousScene ); end }
+storyboard.state.backBtn.x = 50
+storyboard.state.backBtn.y = 20
+storyboard.state.backBtn.alpha = 0
+
+storyboard.state.localBackBtn = ui.newButton{
+    default = "backButton.png",
+    over = "backButton_over.png",
+    onRelease = backBtnRelease
+}
+storyboard.state.localBackBtn.y = 20
+storyboard.state.localBackBtn.x = -50
 
 -----------------------------DATABASE STUFF------------------------------------------
 require "sqlite3"
@@ -64,7 +93,13 @@ local restaurantTable =
         avgValue = 2.7,
         address = "2 main street, dublin 2.",
         image = "rest1.jpg",
-        website = "http://www.example1.com/"
+        website = "http://www.example1.com/",
+        wheatVoteNum = 24,
+        wheatVotePercent = 35.9,
+        glutenVoteNum = 24,
+        glutenVotePercent = 35.9,
+        dairyVoteNum = 24,
+        dairyVotePercent = 35.9
     },
     {
         name = "Mexican Restaurant",
@@ -72,7 +107,13 @@ local restaurantTable =
         avgValue = 1.9,
         address = "6 main street, dublin 2.",
         image = "rest2.jpg",
-        website = "http://www.example2.com/"
+        website = "http://www.example2.com/",
+        wheatVoteNum = 24,
+        wheatVotePercent = 35.9,
+        glutenVoteNum = 24,
+        glutenVotePercent = 35.9,
+        dairyVoteNum = 24,
+        dairyVotePercent = 35.9
     },
     {
         name = "Chinese Restaurant",
@@ -80,7 +121,13 @@ local restaurantTable =
         avgValue = 3.2,
         address = "7 main street, dublin 2.",
         image = "rest3.jpg",
-        website = "http://www.example3.com/"
+        website = "http://www.example3.com/",
+        wheatVoteNum = 24,
+        wheatVotePercent = 35.9,
+        glutenVoteNum = 24,
+        glutenVotePercent = 35.9,
+        dairyVoteNum = 24,
+        dairyVotePercent = 35.9
     },
     {
         name = "Maeves Restaurant",
@@ -88,12 +135,18 @@ local restaurantTable =
         avgValue = 1.2,
         address = "8 main street, dublin 2.",
         image = "rest4.jpg",
-        website = "http://www.example4.com/"
+        website = "http://www.example4.com/",
+        wheatVoteNum = 24,
+        wheatVotePercent = 35.9,
+        glutenVoteNum = 24,
+        glutenVotePercent = 35.9,
+        dairyVoteNum = 24,
+        dairyVotePercent = 35.9
     }
 }
 
 for i=1,#restaurantTable do
-    local q = [[INSERT INTO restaurant VALUES (NULL, ']] .. restaurantTable[i].name .. [[',']] .. restaurantTable[i].avgYummy .. [[', ']] .. restaurantTable[i].avgValue .. [[', ']] .. restaurantTable[i].address .. [[', ']] .. restaurantTable[i].image .. [[', ']] .. restaurantTable[i].website ..[['); ]]
+    local q = [[INSERT INTO restaurant VALUES (NULL, ']] .. restaurantTable[i].name .. [[',']] .. restaurantTable[i].avgYummy .. [[', ']] .. restaurantTable[i].avgValue .. [[', ']] .. restaurantTable[i].address .. [[', ']] .. restaurantTable[i].image .. [[', ']] .. restaurantTable[i].website ..[[', ']] ..restaurantTable[i].wheatVoteNum ..[[', ']] ..restaurantTable[i].wheatVotePercent ..[[', ']] ..restaurantTable[i].glutenVoteNum ..[[', ']] ..restaurantTable[i].glutenVotePercent ..[[', ']] ..restaurantTable[i].dairyVoteNum ..[[', ']] ..restaurantTable[i].dairyVotePercent ..[['); ]]
     db:exec( q )
 end
 
@@ -108,3 +161,7 @@ local function onSystemEvent( event )
     end
 end
 Runtime:addEventListener( "system", onSystemEvent )
+
+-- load scenetemplate.lua
+storyboard.gotoScene( "home" )
+

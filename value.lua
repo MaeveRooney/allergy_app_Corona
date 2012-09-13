@@ -26,17 +26,15 @@ local ui = require("ui")
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
 
-local myList, backBtn, detailScreenText, goBackSearch
+local myList, detailScreenText, data
+local w,h = display.contentWidth, display.contentHeight - 50
 
-local w,h = display.contentWidth, display.contentHeight - 50 
+local topBoundary = display.screenOriginY + 40
+local bottomBoundary = display.screenOriginY + 0
 
-local function goToSearch(event)
-    local options = {effect = "fade", time = 400 }
-    storyboard.gotoScene( "search", options)
-end
 
 --initial values
-local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableContentWidth, display.contentHeight - display.viewableContentHeight
+local screenOffsetW, screenOffsetH = w -  display.viewableContentWidth, h - display.viewableContentHeight
 
 
 --load database
@@ -47,26 +45,27 @@ local db = sqlite3.open( path )
 
 local restaurantTableNew = {}  -- starts off emtpy
 
-for row in db:nrows("SELECT * FROM restaurant ORDER BY avgValue DESC") do
-    -- create table at next available array index
-    restaurantTableNew[#restaurantTableNew+1] =
-    {
-        name = row.name,
-        avgRating = ((row.avgYummy + row.avgValue)/2),
-        avgYummy = row.avgYummy,
-        avgValue = row.avgValue,
-        address = row.address,
-        image = row.image,
-        website = row.website
-    }
-end
-
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
+    print('creating value')
     local group = self.view
 
-    local background = display.newRect(0, 0, display.contentWidth, display.contentHeight)
+    for row in db:nrows("SELECT * FROM restaurant ORDER BY avgValue DESC") do
+    -- create table at next available array index
+        restaurantTableNew[#restaurantTableNew+1] =
+        {
+            name = row.name,
+            avgRating = ((row.avgYummy + row.avgValue)/2),
+            avgYummy = row.avgYummy,
+            avgValue = row.avgValue,
+            address = row.address,
+            image = row.image,
+            website = row.website
+        }
+    end
+
+    local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
     group:insert(background)
 
@@ -74,30 +73,30 @@ function scene:createScene( event )
     local detailScreen = display.newGroup()
     group:insert(detailScreen)
 
-    local detailBg = display.newRect(0,0,display.contentWidth,display.contentHeight-display.screenOriginY)
+    local detailBg = display.newRect(0,0,w,h-display.screenOriginY)
     detailBg:setFillColor(255,255,255)
     detailScreen:insert(detailBg)
 
     detailScreenText = display.newText("You tapped item", 0, 0, native.systemFontBold, 24)
     detailScreenText:setTextColor(0, 0, 0)
     detailScreen:insert(detailScreenText)
-    detailScreenText.x = math.floor(display.contentWidth/2)
-    detailScreenText.y = math.floor(display.contentHeight/2)
-    detailScreen.x = display.contentWidth
+    detailScreenText.x = math.floor(w/2)
+    detailScreenText.y = math.floor(h/2)
+    detailScreen.x = w
+
 
     --setup functions to execute on touch of the list view items
     function listButtonRelease( event )
         self = event.target
         local id = self.id
 
+        storyboard.state.localBackBtn.x = 50
+        storyboard.state.backBtn.x = -50
+
         detailScreenText.text = restaurantTableNew[self.id].name
-        backBtn.alpha = 1
-
-        transition.to(myList, {time=400, x=display.contentWidth*-1, transition=easing.outExpo })
+        transition.to(myList, {time=400, x=w*-1, transition=easing.outExpo })
         transition.to(detailScreen, {time=400, x=0, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, x=math.floor(backBtn.width/2) + screenOffsetW*.5 + 6, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, alpha=1 })
-
+        print('detail screen')
 
         delta, velocity = 0, 0
     end
@@ -105,15 +104,14 @@ function scene:createScene( event )
     function backBtnRelease( event )
         print("back button released")
 
+        storyboard.state.localBackBtn.x = -50
+        storyboard.state.backBtn.x = 50
+
         transition.to(myList, {time=400, x=0, transition=easing.outExpo })
         transition.to(detailScreen, {time=400, x=display.contentWidth, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, x=math.floor(backBtn.width/2)+backBtn.width, transition=easing.outExpo })
-        transition.to(backBtn, {time=400, alpha=0 })
-
 
         delta, velocity = 0, 0
     end
-
 
     -- setup some data
     local data = {}
@@ -124,8 +122,6 @@ function scene:createScene( event )
         data[i].image = restaurantTableNew[i].image
     end
 
-    local topBoundary = display.screenOriginY + 40
-    local bottomBoundary = display.screenOriginY + 0
 
     -- create the list of items
     myList = tableView.newList{
@@ -138,7 +134,7 @@ function scene:createScene( event )
         backgroundColor={ 255, 255, 255 },
         callback=function(row)
                 local g = display.newGroup()
-                
+
                 local img = display.newImage(row.image)
                 g:insert(img)
                 img.width = 80
@@ -162,28 +158,6 @@ function scene:createScene( event )
     }
     group:insert(myList)
 
-    --Setup the nav bar
-    local navBar = display.newImage("navBar.png", 0, 0, true)
-    navBar.x = display.contentWidth*.5
-    navBar.y = math.floor(display.screenOriginY + navBar.height*0.5)
-    group:insert(navBar)
-
-    local navHeader = display.newText("Value Search Results", 0, 0, native.systemFontBold, 16)
-    navHeader:setTextColor(255, 255, 255)
-    navHeader.x = display.contentWidth*.5 + 30
-    navHeader.y = navBar.y
-    group:insert(navHeader)
-
-    --Setup the back button
-    backBtn = ui.newButton{
-        default = "backButton.png",
-        over = "backButton_over.png",
-        onRelease = backBtnRelease
-    }
-    backBtn.x = math.floor(backBtn.width/2) + backBtn.width + screenOffsetW
-    backBtn.y = navBar.y
-    backBtn.alpha = 0
-    group:insert(backBtn)
 
     -----------------------------------------------------------------------------
 
@@ -198,25 +172,48 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
     local group = self.view
-    
-	-- remove previous scene's view
-	storyboard.purgeScene( "search" )
-	print("entering")
+    print("entering value")
+    storyboard.state.navHeader.text = "      Search By Value"
+
+    storyboard.state.backBtn.alpha = 1
+
+    storyboard.removeScene( "search" )
+
+    storyboard.state.localBackBtn = ui.newButton{
+        default = "backButton.png",
+        over = "backButton_over.png",
+        onRelease = backBtnRelease
+    }
+    storyboard.state.localBackBtn.y = 20
+    storyboard.state.localBackBtn.x = -50
+    storyboard.state.backBtn.x = 50
+
 
 end
 
 
 -- Called when scene is about to move offscreen:
 function scene:exitScene()
-
+    print('leaving value')
+    storyboard.removeScene( "value" )
+    storyboard.state.previousScene = "value"
 
 end
+
 
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
+    local group = self.view
+    print ('destroying value')
 
-	print( "((destroying scene 1's view))" )
+    -----------------------------------------------------------------------------
+
+    --  INSERT code here (e.g. remove listeners, widgets, save state, etc.)
+
+    -----------------------------------------------------------------------------
+
 end
+
 
 ---------------------------------------------------------------------------------
 -- END OF YOUR IMPLEMENTATION
@@ -235,9 +232,9 @@ scene:addEventListener( "exitScene", scene )
 -- automatically unloaded in low memory situations, or explicitly via a call to
 -- storyboard.purgeScene() or storyboard.removeScene().
 scene:addEventListener( "destroyScene", scene )
-
 ---------------------------------------------------------------------------------
 
 return scene
+
 
 

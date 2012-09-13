@@ -22,7 +22,7 @@ local scene = storyboard.newScene()
     
 local square1, square2, square3, myAccount, searchRestaurants, reviewRestaurants
 
-local w,h = display.contentWidth, display.contentHeight - 50 
+local w,h = display.contentWidth, display.contentHeight - 10 
 
 local function goToAccount(event)
     local options = {effect = "fade", time = 400 }
@@ -104,6 +104,10 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
     local group = self.view
+
+    print("entering home")
+
+    storyboard.state.navHeader.text = "Home"
     
     square1:addEventListener("tap",goToAccount)
     square2:addEventListener("tap",goToSearch)
@@ -120,9 +124,15 @@ end
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
     local group = self.view
+    print('exiting')
+    storyboard.state.previousScene = "home"
+
     square1:removeEventListener("tap",goToAccount)
     square2:removeEventListener("tap",goToSearch)
     square3:removeEventListener("tap",goToReview)
+
+    storyboard.removeScene( "home" )
+
     -----------------------------------------------------------------------------
     
     --  INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
@@ -132,14 +142,10 @@ function scene:exitScene( event )
 end
 
 
-function scene:didExitScene( event )
-    storyboard.purgeScene( "home" )
-end
-
-
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
     local group = self.view
+    print('destroying home')
 end
 
 

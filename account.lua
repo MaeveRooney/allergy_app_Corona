@@ -91,7 +91,7 @@ end
 function saveChanges(event)
     print('changing')
     tapText.text = 'Changes Saved'
-    local q = [[UPDATE user SET name='Big Bird';]]
+    local q = [[UPDATE user SET name=']]..userTable[1].name..[[', email=']] ..userTable[1].email..[[', wheat=']] ..userTable[1].wheat.. [[', gluten=']] ..userTable[1].gluten.. [[', dairy=']] ..userTable[1].dairy.. [[' ;]]
     db:exec( q )
 end
 
@@ -203,19 +203,12 @@ end
 function scene:enterScene( event )
     local group= self.view
     print('entering')
+
+    storyboard.state.navHeader.text = "My Account"
+
+    storyboard.state.backBtn.alpha = 1
+
     userTable = {}  -- starts off emtpy
-	
-	for row in db:nrows("SELECT * FROM user where email = 'maeve.rooney@gmail.com'") do
-	-- create table at next available array index
-	userTable[#userTable+1] =
-    {
-        name = row.name,
-        email = row.email,
-        wheat = row.wheat,
-        gluten = row.gluten,
-        dairy = row.dairy
-    }
-	end
 
     for row in db:nrows("SELECT * FROM user where email = 'maeve.rooney@gmail.com'") do
     -- create table at next available array index
@@ -269,30 +262,30 @@ end
 
 -- Called when scene is about to move offscreen:
 function scene:exitScene()
-    print('leaving')
-
+    print('leaving account')
+    
     wheatBool:removeEventListener("tap", changeWheatBool)
     dairyBool:removeEventListener("tap", changeDairyBool)
     glutenBool:removeEventListener("tap", changeGlutenBool)
     saveText:removeEventListener("tap", saveChanges)
 
-end
+    storyboard.removeScene( "account" )
+    storyboard.state.previousScene = "account"
 
-function scene:didExitScene( event )
-    storyboard.purgeScene( "account" )
 end
 
 
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
     local group = self.view
-    
+    print ('destroying account')
+
     -----------------------------------------------------------------------------
-    
+
     --  INSERT code here (e.g. remove listeners, widgets, save state, etc.)
-    
+
     -----------------------------------------------------------------------------
-    
+
 end
 
 

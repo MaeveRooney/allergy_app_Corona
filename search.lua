@@ -20,9 +20,9 @@ local scene = storyboard.newScene()
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
 
-local button1, button2, button4, searchValue, searchTasty, backHome
+local button1, button2, button4, searchValue, searchTasty
 
-local w,h = display.contentWidth, display.contentHeight - 50 
+local w,h = display.contentWidth, display.contentHeight - 10
 
 local function changeScene2(event)
     local options = {effect = "fade", time = 400 }
@@ -30,18 +30,12 @@ local function changeScene2(event)
 end
 
 local function changeScene3(event)
-    local options = {}
-    storyboard.gotoScene( "Yummy", options)
+    storyboard.gotoScene( "yummy" )
 end
 
 local function changeScene4(event)
     local options = {effect = "fade", time = 400 }
-    storyboard.gotoScene( "Value", options)
-end
-
-local function changeScene5(event)
-    local options = {effect = "fade", time = 400 }
-    storyboard.gotoScene( "home", options)
+    storyboard.gotoScene( "value", options)
 end
 
 -- Called when the scene's view does not exist:
@@ -56,25 +50,21 @@ function scene:createScene( event )
     labels = {}
 
     button1 = display.newRect( 0, 0, 3*(w/4), 50 )
-    searchRating = display.newText("Search by Overall Rating",0,0,nil,15)
+    searchRating = display.newText("Search by Overall Rating",0,0,nil,18)
 
     button2 = display.newRect( 0, 0, 3*(w/4), 50 )
-    searchTasty = display.newText("Search by Yumminess",0,0,nil,15)
+    searchTasty = display.newText("Search by Yumminess",0,0,nil,18)
 
     button3 = display.newRect( 0, 0, 3*(w/4), 50 )
-    searchValue = display.newText("Search by Value",0,0,nil,15)
-
-    button4 = display.newRect( 0, 0, 3*(w/4), 50 )
-    backHome = display.newText("Home Page",0,0,nil,20)
+    searchValue = display.newText("Search by Value",0,0,nil,18)
 
     buttons[1] = button1
     buttons[2] = button2
     buttons[3] = button3
-    buttons[4] = button4
 
     for i=1,#buttons do
         buttons[i].x = (w/2)
-        buttons[i].y = i*(h/5)
+        buttons[i].y = i*(h/4)
         buttons[i].strokeWidth = 3
         buttons[i]:setStrokeColor(150,150,150)
         buttons[i]:setFillColor( 50,50,50 )
@@ -84,11 +74,10 @@ function scene:createScene( event )
     labels[1] = searchRating
     labels[2] = searchTasty
     labels[3] = searchValue
-    labels[4] = backHome
 
     for i=1,#labels do
         labels[i].x = (w/2)
-        labels[i].y = i*(h/5)
+        labels[i].y = i*(h/4)
         labels[i]:setTextColor(255,255,255)
         group:insert(labels[i])
     end
@@ -109,10 +98,13 @@ end
 function scene:enterScene( event )
     local group = self.view
 
+    storyboard.state.navHeader.text = "Search Eateries"
+
+    storyboard.state.backBtn.alpha = 1
+    
     button1:addEventListener("tap",changeScene2)
     button2:addEventListener("tap",changeScene3)
     button3:addEventListener("tap",changeScene4)
-    button4:addEventListener("tap",changeScene5)
     -----------------------------------------------------------------------------
 
     --  INSERT code here (e.g. start timers, load audio, start listeners, etc.)
@@ -128,18 +120,16 @@ function scene:exitScene( event )
     button1:removeEventListener("tap",changeScene2)
     button2:removeEventListener("tap",changeScene3)
     button3:removeEventListener("tap",changeScene4)
-    button4:removeEventListener("tap",changeScene5)
+
+    storyboard.purgeScene( "search" )
+    storyboard.state.previousScene = "search"
+
     -----------------------------------------------------------------------------
 
     --  INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
 
     -----------------------------------------------------------------------------
 
-end
-
-
-function scene:didExitScene( event )
-    storyboard.purgeScene( "search" )
 end
 
 
@@ -170,7 +160,6 @@ scene:addEventListener( "exitScene", scene )
 scene:addEventListener( "destroyScene", scene )
 
 
-scene:addEventListener( "didExitScene", scene)
 ---------------------------------------------------------------------------------
 
 return scene
