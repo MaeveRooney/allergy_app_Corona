@@ -22,11 +22,11 @@ local scene = storyboard.newScene()
 
 local button1, button2, button4, searchValue, searchTasty, backHome
 
-local w,h = display.contentWidth, display.contentHeight
+local w,h = display.contentWidth, display.contentHeight - 50 
 
 local function changeScene2(event)
     local options = {effect = "fade", time = 400 }
-    storyboard.gotoScene( "Rating", options)
+    storyboard.gotoScene( "rating", options)
 end
 
 local function changeScene3(event)
@@ -51,8 +51,6 @@ function scene:createScene( event )
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
     group:insert(background)
-
-    h,w = display.contentHeight, display.contentWidth
 
     buttons = {}
     labels = {}

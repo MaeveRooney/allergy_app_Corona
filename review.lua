@@ -5,6 +5,7 @@
 ----------------------------------------------------------------------------------
 
 local storyboard = require( "storyboard" )
+local widget = require "widget"
 local scene = storyboard.newScene()
 
 --import the table view library
@@ -28,7 +29,7 @@ local ui = require("ui")
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
 --initial values
-local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableContentWidth, display.contentHeight - display.viewableContentHeight
+local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableContentWidth, display.contentHeight - 50 - display.viewableContentHeight
 
 table.indexOf = function( t, object )
     local result
@@ -46,7 +47,7 @@ table.indexOf = function( t, object )
 end
 
 local sceneText, backBtn, friendStarTable, yummyStarTable, valueStarTable, friendRating, tastyRating, valueRating
-local w,h = display.contentWidth, display.contentHeight
+local w,h = display.contentWidth, display.contentHeight - 50 
 
 --load database
 require "sqlite3"
@@ -98,7 +99,12 @@ end
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
     local group = self.view
-
+	
+	local scrollBox = widget.newScrollView{
+		top = 50,
+		width = 320, height = 366,
+		scrollWidth = 768, scrollHeight = 1024,
+	}	
     
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
@@ -130,19 +136,19 @@ function scene:createScene( event )
     restaurantName = display.newText("", 0, 0, native.systemFontBold, 18)
     restaurantName:setTextColor(0, 0, 0)
     restaurantName.x = math.floor(w/2)
-    restaurantName.y = math.floor(h/5)
-    group:insert(restaurantName)
+    restaurantName.y = math.floor(h/7)
+    scrollBox:insert(restaurantName)
 
     reviewText = display.newText('', 0, 0, native.systemFontBold, 18)
     reviewText:setTextColor(0, 0, 0)
     reviewText.x = math.floor(w/2)
     reviewText.y = math.floor(h/3)
-    group:insert(reviewText)
+    scrollBox:insert(reviewText)
 
     friendText = display.newText("    Friendliness rating:", 0, 0, native.systemFontBold, 16)
     friendText:setTextColor(0, 0, 0)
     friendText.y = math.floor(h/2)
-    group:insert(friendText)
+    scrollBox:insert(friendText)
 
     friendStarTable = {}
 
@@ -151,13 +157,13 @@ function scene:createScene( event )
         friendStarTable[i]:setTextColor(150,150,150)
         friendStarTable[i].x = math.floor(w/2) + 40 + 20*i
         friendStarTable[i].y = math.floor(h/2) + 8
-        group:insert(friendStarTable[i])
+        scrollBox:insert(friendStarTable[i])
     end
 
     yummyText = display.newText("    Yumminess Rating:", 0, 0, native.systemFontBold, 16)
     yummyText:setTextColor(0, 0, 0)
     yummyText.y = math.floor(h/2) + 40
-    group:insert(yummyText)
+    scrollBox:insert(yummyText)
 
     yummyStarTable = {}
 
@@ -166,13 +172,13 @@ function scene:createScene( event )
         yummyStarTable[i]:setTextColor(150,150,150)
         yummyStarTable[i].x = math.floor(w/2) + 40 + 20*i
         yummyStarTable[i].y = math.floor(h/2) + 48
-        group:insert(yummyStarTable[i])
+        scrollBox:insert(yummyStarTable[i])
     end
 
     valueText = display.newText("    Value for money:", 0, 0, native.systemFontBold, 16)
     valueText:setTextColor(0, 0, 0)
     valueText.y = math.floor(h/2) + 80
-    group:insert(valueText)
+    scrollBox:insert(valueText)
 
     valueStarTable = {}
 
@@ -181,16 +187,16 @@ function scene:createScene( event )
         valueStarTable[i]:setTextColor(150,150,150)
         valueStarTable[i].x = math.floor(w/2) + 40 + 20*i
         valueStarTable[i].y = math.floor(h/2) + 88
-        group:insert(valueStarTable[i])
+        scrollBox:insert(valueStarTable[i])
     end
 
     saveText = display.newText("Save Changes", 0, 0, native.systemFontBold, 20)
     saveText:setTextColor(0, 0, 180)
     saveText.x = math.floor(w/2)
     saveText.y = math.floor(h/2) + 180
-    group:insert(saveText)
+    scrollBox:insert(saveText)
 
-
+	group:insert(scrollBox)
 
 
     -----------------------------------------------------------------------------

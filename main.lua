@@ -1,23 +1,60 @@
 display.setStatusBar(display.HiddenStatusBar); 		--hide the status bar
 
 local storyboard = require "storyboard"
+local widget = require "widget"
 
 -- load scenetemplate.lua
 storyboard.gotoScene( "home" )
 
--- Add any objects that should appear on all scenes below (e.g. tab bar, hud, etc.):
---
+
+-- Display objects added below will not respond to storyboard transitions
+
+-- create buttons table for the tab bar
+local tabButtons = {
+	{
+		label="home",
+		default="assets/tabIcon.png",
+		down="assets/tabIcon-down.png",
+		width=32, height=32,
+		onPress=function() storyboard.gotoScene( "home" ); end,
+		selected=true
+	},
+	{
+		label="Search",
+		default="assets/tabIcon.png",
+		down="assets/tabIcon-down.png",
+		width=32, height=32,
+		onPress=function() storyboard.gotoScene( "search" ); end,
+	},
+	{
+		label="My Account",
+		default="assets/tabIcon.png",
+		down="assets/tabIcon-down.png",
+		width=32, height=32,
+		onPress=function() storyboard.gotoScene( "account" ); end,
+	}
+}
+
+-- create a tab-bar and place it at the bottom of the screen
+local demoTabs = widget.newTabBar{
+	top=display.contentHeight-50,
+	buttons=tabButtons
+}
+
+-----------------------------DATABASE STUFF------------------------------------------
 require "sqlite3"
 
 local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
-local tablesetup1 = [[CREATE TABLE IF NOT EXISTS restaurant (id INTEGER PRIMARY KEY autoincrement, name text unique not null, avgYummy num, avgValue num, address text, image text, website text unique);]]
+local tablesetup1 = [[CREATE TABLE IF NOT EXISTS restaurant (id INTEGER PRIMARY KEY autoincrement, name text unique not null, avgYummy num, avgValue num, address text, image text, website text unique, wheatVoteNum int, wheatVotePercent num, glutenVoteNum int, glutenVotePercent num, dairyVoteNum int, dairyVotePercent num);]]
 db:exec( tablesetup1 )
 
 local tablesetup2 = [[CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY autoincrement, name text not null, email unique not null, wheat text, gluten text, dairy text);]]
 db:exec( tablesetup2 )
 
+local tablesetup3 = [[CREATE TABLE IF NOT EXISTS review (id INTEGER PRIMARY KEY autoincrement, restaurantId integer REFERENCES restaurant not null, userId integer REFERENCES user not null, reviewText text, friendly integer, yummy integer, value integer, wheatVote int, glutenVote int, dairyVote int);]]
+db:exec( tablesetup3 )
 
 local restaurantTable =
 {

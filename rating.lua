@@ -28,7 +28,7 @@ local ui = require("ui")
 
 local myList, backBtn1, detailScreenText, goBackSearch
 
-local w,h = display.contentWidth, display.contentHeight
+local w,h = display.contentWidth, display.contentHeight - 50 
 
 local function goToSearch(event)
     local options = {effect = "fade", time = 400 }
@@ -120,7 +120,7 @@ function scene:createScene( event )
     for i=1, #restaurantTableNew do
         data[i] = {}
         data[i].title = restaurantTableNew[i].name
-        data[i].subtitle = "Yummy Rating  " .. restaurantTableNew[i].avgYummy
+        data[i].subtitle = "Overall Rating " .. restaurantTableNew[i].avgRating
         data[i].image = restaurantTableNew[i].image
     end
 
@@ -168,7 +168,7 @@ function scene:createScene( event )
     navBar.y = math.floor(display.screenOriginY + navBar.height*0.5)
     group:insert(navBar)
 
-    local navHeader = display.newText("Yummy Search Results", 0, 0, native.systemFontBold, 16)
+    local navHeader = display.newText("Overall Search Results", 0, 0, native.systemFontBold, 16)
     navHeader:setTextColor(255, 255, 255)
     navHeader.x = display.contentWidth*.5 + 30
     navHeader.y = navBar.y

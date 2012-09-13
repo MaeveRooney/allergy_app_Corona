@@ -22,7 +22,7 @@ local scene = storyboard.newScene()
     
 local square1, square2, square3, myAccount, searchRestaurants, reviewRestaurants
 
-local w,h = display.contentWidth, display.contentHeight
+local w,h = display.contentWidth, display.contentHeight - 50 
 
 local function goToAccount(event)
     local options = {effect = "fade", time = 400 }
@@ -46,10 +46,7 @@ function scene:createScene( event )
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
     group:insert(background)
-
-            
-    h,w = display.contentHeight, display.contentWidth   
-    
+ 
     buttons = {}
     labels = {}
     

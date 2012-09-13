@@ -28,7 +28,7 @@ local ui = require("ui")
 
 local myList, backBtn, detailScreenText, goBackSearch, data, navBar, navHeader
 
-local w,h = display.contentWidth, display.contentHeight
+local w,h = display.contentWidth, display.contentHeight - 50 
 
 local topBoundary = display.screenOriginY + 40
 local bottomBoundary = display.screenOriginY + 0

@@ -33,7 +33,7 @@ local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableCon
 
 
 local sceneText, backBtn, userTable
-local w,h = display.contentWidth, display.contentHeight
+local w,h = display.contentWidth, display.contentHeight -50
 
 --load database
 require "sqlite3"
@@ -43,17 +43,7 @@ local db = sqlite3.open( path )
 
 userTable = {}  -- starts off emtpy
 
-for row in db:nrows("SELECT * FROM user where email = 'maeve.rooney@gmail.com'") do
--- create table at next available array index
-userTable[#userTable+1] =
-    {
-        name = row.name,
-        email = row.email,
-        wheat = row.wheat,
-        gluten = row.gluten,
-        dairy = row.dairy
-    }
-end
+
 
 
 local function goHomeScreen()
@@ -101,7 +91,7 @@ end
 function saveChanges(event)
     print('changing')
     tapText.text = 'Changes Saved'
-    local q = [[UPDATE user SET name='Big Bird' WHERE name='Maeve Rooney'";]]
+    local q = [[UPDATE user SET name='Big Bird';]]
     db:exec( q )
 end
 
@@ -214,6 +204,18 @@ function scene:enterScene( event )
     local group= self.view
     print('entering')
     userTable = {}  -- starts off emtpy
+	
+	for row in db:nrows("SELECT * FROM user where email = 'maeve.rooney@gmail.com'") do
+	-- create table at next available array index
+	userTable[#userTable+1] =
+    {
+        name = row.name,
+        email = row.email,
+        wheat = row.wheat,
+        gluten = row.gluten,
+        dairy = row.dairy
+    }
+	end
 
     for row in db:nrows("SELECT * FROM user where email = 'maeve.rooney@gmail.com'") do
     -- create table at next available array index
@@ -255,6 +257,7 @@ function scene:enterScene( event )
     else
         dairyBool:setTextColor(150, 0, 0)
     end
+	
 
 
     wheatBool:addEventListener("tap", changeWheatBool)
