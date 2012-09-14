@@ -44,14 +44,6 @@ local db = sqlite3.open( path )
 userTable = {}  -- starts off emtpy
 
 
-
-
-local function goHomeScreen()
-    userTable = {} 
-    local options = {effect = "fade", time = 400 }
-    storyboard.gotoScene( "home", options)
-end
-
 ---------------------------------------------------------------------------------
 --CHANGE VALUES FOR ALLERGY BOOLS
 ---------------------------------------------------------------------------------
@@ -101,33 +93,9 @@ end
 function scene:createScene( event )
     local group = self.view
 
-    
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
     group:insert(background)
-
-    --Setup the nav bar
-    local navBar = display.newImage("navBar.png", 0, 0, true)
-    navBar.x = w*.5
-    navBar.y = math.floor(display.screenOriginY + navBar.height*0.5)
-    group:insert(navBar)
-
-    local navHeader = display.newText("My Allergy", 0, 0, native.systemFontBold, 16)
-    navHeader:setTextColor(255, 255, 255)
-    navHeader.x = w*.5 + 30
-    navHeader.y = navBar.y
-    group:insert(navHeader)
-
-    --Setup the back button
-    backBtn = ui.newButton{
-        default = "backButton.png",
-        over = "backButton_over.png",
-        onRelease = goHomeScreen
-    }
-    backBtn.x = 50
-    backBtn.y = navBar.y
-    backBtn.alpha = 1
-    group:insert(backBtn)
 
     userText = display.newText("", 0, 0, native.systemFontBold, 24)
     userText:setTextColor(0, 0, 0)
@@ -177,16 +145,19 @@ function scene:createScene( event )
     tapText = display.newText("Tap Yes/No to change", 0, 0, native.systemFontBold, 12)
     tapText:setTextColor(90, 90, 90)
     tapText.x = math.floor(w/2)
-    tapText.y = math.floor(h/2) + 140
+    tapText.y = math.floor(h/2) + 120
     group:insert(tapText)
 
-    saveText = display.newText("Save Changes", 0, 0, native.systemFontBold, 20)
-    saveText:setTextColor(0, 0, 180)
-    saveText.x = math.floor(w/2)
-    saveText.y = math.floor(h/2) + 180
-    group:insert(saveText)
-
-
+    local saveButton = ui.newButton{
+    default = "assets/buttonBlue.png",
+    over = "assets/buttonBlueOver.png",
+    onRelease = saveChanges,
+    text = "SaveChanges",
+    emboss = true
+    }
+    group:insert(saveButton)
+    saveButton.x = 160
+    saveButton.y = math.floor(h/2) + 180
 
 
     -----------------------------------------------------------------------------
@@ -250,24 +221,21 @@ function scene:enterScene( event )
     else
         dairyBool:setTextColor(150, 0, 0)
     end
-	
 
 
     wheatBool:addEventListener("tap", changeWheatBool)
     dairyBool:addEventListener("tap", changeDairyBool)
     glutenBool:addEventListener("tap", changeGlutenBool)
-    saveText:addEventListener("tap", saveChanges)
 end
 
 
 -- Called when scene is about to move offscreen:
 function scene:exitScene()
     print('leaving account')
-    
+
     wheatBool:removeEventListener("tap", changeWheatBool)
     dairyBool:removeEventListener("tap", changeDairyBool)
     glutenBool:removeEventListener("tap", changeGlutenBool)
-    saveText:removeEventListener("tap", saveChanges)
 
     storyboard.removeScene( "account" )
     storyboard.state.previousScene = "account"

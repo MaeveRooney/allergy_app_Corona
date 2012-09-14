@@ -40,7 +40,7 @@ local screenOffsetW, screenOffsetH = w -  display.viewableContentWidth, h - disp
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test4.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local restaurantTableNew = {}  -- starts off emtpy
@@ -126,8 +126,8 @@ function scene:createScene( event )
     -- create the list of items
     myList = tableView.newList{
         data=data,
-        default="listItemBg.png",
-        over="listItemBg_over.png",
+        default="assets/listItemBg.png",
+        over="assets/listItemBg_over.png",
         onRelease=listButtonRelease,
         top=topBoundary,
         bottom=bottomBoundary,
@@ -180,8 +180,8 @@ function scene:enterScene( event )
     storyboard.removeScene( "search" )
 
     storyboard.state.localBackBtn = ui.newButton{
-        default = "backButton.png",
-        over = "backButton_over.png",
+        default = "assets/backButton.png",
+        over = "assets/backButton_over.png",
         onRelease = backBtnRelease
     }
     storyboard.state.localBackBtn.y = 20

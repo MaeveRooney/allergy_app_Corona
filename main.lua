@@ -36,35 +36,34 @@ storyboard.state.tabButtons = {
 }
 
 -- create a tab-bar and place it at the bottom of the screen
-local demoTabs = widget.newTabBar{
-    top=display.contentHeight-50,
+storyboard.state.demoTabs = widget.newTabBar{
+    top=display.contentHeight,
     buttons=storyboard.state.tabButtons
 }
 
 --Setup the nav bar
-local navBar = display.newImage("navBar.png", 0, 0, true)
-navBar.x = display.contentWidth*.5
-navBar.y = math.floor(display.screenOriginY + navBar.height*0.5)
+storyboard.state.navBar = display.newImage("assets/navBar.png", 0, 0, true)
+storyboard.state.navBar.x = -1000
+storyboard.state.navBar.y = math.floor(display.screenOriginY + storyboard.state.navBar.height*0.5)
 
-storyboard.state.navHeader = display.newText("Home", 0, 0, native.systemFontBold, 16)
+storyboard.state.navHeader = display.newText("", 0, 0, native.systemFontBold, 16)
 storyboard.state.navHeader:setTextColor(255, 255, 255)
-storyboard.state.navHeader.x = navBar.x
-storyboard.state.navHeader.y = navBar.y
+storyboard.state.navHeader.x = display.contentWidth*.5
+storyboard.state.navHeader.y = storyboard.state.navBar.y
 
 storyboard.state.previousScene = "home"
 
 --Setup the back button
 storyboard.state.backBtn = ui.newButton{
-    default = "backButton.png",
-    over = "backButton_over.png",
+    default = "assets/backButton.png",
+    over = "assets/backButton_over.png",
     onRelease = function() storyboard.gotoScene( storyboard.state.previousScene ); end }
-storyboard.state.backBtn.x = 50
+storyboard.state.backBtn.x = -50
 storyboard.state.backBtn.y = 20
-storyboard.state.backBtn.alpha = 0
 
 storyboard.state.localBackBtn = ui.newButton{
-    default = "backButton.png",
-    over = "backButton_over.png",
+    default = "assets/backButton.png",
+    over = "assets/backButton_over.png",
     onRelease = backBtnRelease
 }
 storyboard.state.localBackBtn.y = 20
@@ -73,7 +72,7 @@ storyboard.state.localBackBtn.x = -50
 -----------------------------DATABASE STUFF------------------------------------------
 require "sqlite3"
 
-local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test4.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local tablesetup1 = [[CREATE TABLE IF NOT EXISTS restaurant (id INTEGER PRIMARY KEY autoincrement, name text unique not null, avgYummy num, avgValue num, address text, image text, website text unique, wheatVoteNum int, wheatVotePercent num, glutenVoteNum int, glutenVotePercent num, dairyVoteNum int, dairyVotePercent num);]]
@@ -92,7 +91,7 @@ local restaurantTable =
         avgYummy = 4.3,
         avgValue = 2.7,
         address = "2 main street, dublin 2.",
-        image = "rest1.jpg",
+        image = "images/rest1.jpg",
         website = "http://www.example1.com/",
         wheatVoteNum = 24,
         wheatVotePercent = 35.9,
@@ -106,7 +105,7 @@ local restaurantTable =
         avgYummy = 3.7,
         avgValue = 1.9,
         address = "6 main street, dublin 2.",
-        image = "rest2.jpg",
+        image = "images/rest2.jpg",
         website = "http://www.example2.com/",
         wheatVoteNum = 24,
         wheatVotePercent = 35.9,
@@ -120,7 +119,7 @@ local restaurantTable =
         avgYummy = 2.9,
         avgValue = 3.2,
         address = "7 main street, dublin 2.",
-        image = "rest3.jpg",
+        image = "images/rest3.jpg",
         website = "http://www.example3.com/",
         wheatVoteNum = 24,
         wheatVotePercent = 35.9,
@@ -134,7 +133,7 @@ local restaurantTable =
         avgYummy = 4.7,
         avgValue = 1.2,
         address = "8 main street, dublin 2.",
-        image = "rest4.jpg",
+        image = "images/rest4.jpg",
         website = "http://www.example4.com/",
         wheatVoteNum = 24,
         wheatVotePercent = 35.9,
@@ -163,5 +162,5 @@ end
 Runtime:addEventListener( "system", onSystemEvent )
 
 -- load scenetemplate.lua
-storyboard.gotoScene( "home" )
+storyboard.gotoScene( "login" )
 

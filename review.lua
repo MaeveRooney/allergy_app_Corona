@@ -6,6 +6,8 @@
 
 local storyboard = require( "storyboard" )
 local widget = require "widget"
+local scrollView = require("scrollView")
+local util = require("util")
 local scene = storyboard.newScene()
 
 --import the table view library
@@ -49,7 +51,7 @@ end
 local sceneText, backBtn, friendStarTable, yummyStarTable, valueStarTable, wheatOptions, glutenOptions, dairyOptions
 local w,h = display.contentWidth, display.contentHeight - 50
 
-local restaurantNameDB, reviewTextDB, wheatVoteDB, glutenVoteDB, dairyVoteDB, friendRatingDB, yummyRatingDB, valueRatingDB,
+local restaurantNameDB, reviewTextDB, wheatVoteDB, glutenVoteDB, dairyVoteDB, friendRatingDB, yummyRatingDB, valueRatingDB
 wheatVoteDB = 0
 glutenVoteDB = 0
 dairyVoteDB = 0
@@ -57,7 +59,7 @@ dairyVoteDB = 0
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test4.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local function goHomeScreen()
@@ -158,17 +160,20 @@ end
 
 
 function saveChanges(event)
+    print('saving changes')
 end
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
     local group = self.view
-    
-    local scrollBox = widget.newScrollView{
-        top = 50,
-        width = 320, height = 366,
-        scrollWidth = w, scrollHeight = 600,
-    }   
+
+    local topBoundary = display.screenOriginY
+    local bottomBoundary = display.screenOriginY
+    local scrollView = scrollView.new{ top=topBoundary+40, bottom=bottomBoundary+60 }
+
+    local scrollBackground = display.newRect(0, 0, w, h+64)
+    scrollBackground:setFillColor(255, 255, 255)
+    scrollView:insert(1, scrollBackground)
     
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
@@ -178,18 +183,18 @@ function scene:createScene( event )
     restaurantName:setTextColor(0, 0, 0)
     restaurantName.x = math.floor(w/2)
     restaurantName.y = 50
-    scrollBox:insert(restaurantName)
+    scrollView:insert(restaurantName)
 
     reviewText = display.newText('', 0, 0, native.systemFontBold, 18)
     reviewText:setTextColor(0, 0, 0)
     reviewText.x = math.floor(w/2)
     reviewText.y = 100
-    scrollBox:insert(reviewText)
+    scrollView:insert(reviewText)
 
     friendText = display.newText("    Friendliness rating:", 0, 0, native.systemFontBold, 16)
     friendText:setTextColor(0, 0, 0)
     friendText.y = 250
-    scrollBox:insert(friendText)
+    scrollView:insert(friendText)
 
     friendStarTable = {}
 
@@ -198,13 +203,13 @@ function scene:createScene( event )
         friendStarTable[i]:setTextColor(150,150,150)
         friendStarTable[i].x = math.floor(w/2) + 40 + 20*i
         friendStarTable[i].y = 258
-        scrollBox:insert(friendStarTable[i])
+        scrollView:insert(friendStarTable[i])
     end
 
     yummyText = display.newText("    Yumminess Rating:", 0, 0, native.systemFontBold, 16)
     yummyText:setTextColor(0, 0, 0)
     yummyText.y = 290
-    scrollBox:insert(yummyText)
+    scrollView:insert(yummyText)
 
     yummyStarTable = {}
 
@@ -213,13 +218,13 @@ function scene:createScene( event )
         yummyStarTable[i]:setTextColor(150,150,150)
         yummyStarTable[i].x = math.floor(w/2) + 40 + 20*i
         yummyStarTable[i].y = 298
-        scrollBox:insert(yummyStarTable[i])
+        scrollView:insert(yummyStarTable[i])
     end
 
     valueText = display.newText("    Value for money:", 0, 0, native.systemFontBold, 16)
     valueText:setTextColor(0, 0, 0)
     valueText.y = 330
-    scrollBox:insert(valueText)
+    scrollView:insert(valueText)
 
     valueStarTable = {}
 
@@ -228,25 +233,26 @@ function scene:createScene( event )
         valueStarTable[i]:setTextColor(150,150,150)
         valueStarTable[i].x = math.floor(w/2) + 40 + 20*i
         valueStarTable[i].y = 338
-        scrollBox:insert(valueStarTable[i])
+        scrollView:insert(valueStarTable[i])
     end
 
     allergyHeader = display.newText("Does this restaurant cater", 0, 0, native.systemFontBold, 18)
     allergyHeader:setTextColor(0, 0, 0)
     allergyHeader.x = math.floor(w/2)
     allergyHeader.y = 400
-    scrollBox:insert(allergyHeader)
+    scrollView:insert(allergyHeader)
 
     allergyHeader2 = display.newText("to the following allergies?", 0, 0, native.systemFontBold, 18)
     allergyHeader2:setTextColor(0, 0, 0)
     allergyHeader2.x = math.floor(w/2)
     allergyHeader2.y = 420
-    scrollBox:insert(allergyHeader2)
+    scrollView:insert(allergyHeader2)
 
     wheatText = display.newText("    Wheat:", 0, 0, native.systemFontBold, 16)
     wheatText:setTextColor(0, 0, 0)
     wheatText.y = 460
-    scrollBox:insert(wheatText)
+    scrollView:insert(wheatText)
+    scrollView:addScrollBar()
 
     wheatOptions = {}
 
@@ -260,13 +266,13 @@ function scene:createScene( event )
     for i = 1, 3 do
         wheatOptions[i].y = 460
         wheatOptions[i]:setTextColor(150,150,150)
-        scrollBox:insert(wheatOptions[i])
+        scrollView:insert(wheatOptions[i])
     end
 
     glutenText = display.newText("    Gluten:", 0, 0, native.systemFontBold, 16)
     glutenText:setTextColor(0, 0, 0)
     glutenText.y = 500
-    scrollBox:insert(glutenText)
+    scrollView:insert(glutenText)
 
     glutenOptions = {}
 
@@ -280,13 +286,13 @@ function scene:createScene( event )
     for i = 1, 3 do
         glutenOptions[i].y = 500
         glutenOptions[i]:setTextColor(150,150,150)
-        scrollBox:insert(glutenOptions[i])
+        scrollView:insert(glutenOptions[i])
     end
 
     dairyText = display.newText("    Dairy:", 0, 0, native.systemFontBold, 16)
     dairyText:setTextColor(0, 0, 0)
     dairyText.y = 540
-    scrollBox:insert(dairyText)
+    scrollView:insert(dairyText)
 
     dairyOptions = {}
 
@@ -300,18 +306,22 @@ function scene:createScene( event )
     for i = 1, 3 do
         dairyOptions[i].y = 540
         dairyOptions[i]:setTextColor(150,150,150)
-        scrollBox:insert(dairyOptions[i])
+        scrollView:insert(dairyOptions[i])
     end
 
+    local saveButton = ui.newButton{
+    default = "assets/buttonBlue.png",
+    over = "assets/buttonBlueOver.png",
+    onRelease = saveChanges,
+    text = "SaveChanges",
+    emboss = true
+    }
+    scrollView:insert(saveButton)
+    saveButton.x = 160
+    saveButton.y = 600
 
-    saveText = display.newText("Save Changes", 0, 0, native.systemFontBold, 20)
-    saveText:setTextColor(0, 0, 180)
-    saveText.x = math.floor(w/2)
-    saveText.y = 600
-    scrollBox:insert(saveText)
 
-
-    group:insert(scrollBox)
+    group:insert(scrollView)
 
 
     -----------------------------------------------------------------------------
@@ -357,8 +367,6 @@ function scene:enterScene( event )
     for i = 1, 3 do
         dairyOptions[i]:addEventListener("tap", rateDairy)
     end
-    saveText:addEventListener("tap", saveChanges)
-
 
 end
 
@@ -387,7 +395,6 @@ function scene:exitScene()
     for i = 1, 3 do
         dairyOptions[i]:removeEventListener("tap", rateDairy)
     end
-    saveText:removeEventListener("tap", saveChanges)
         
     storyboard.purgeScene( "account" )
 

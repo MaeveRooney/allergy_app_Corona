@@ -5,6 +5,9 @@
 ----------------------------------------------------------------------------------
 
 local storyboard = require( "storyboard" )
+local widget = require "widget"
+local ui = require("ui")
+
 local scene = storyboard.newScene()
 
 ----------------------------------------------------------------------------------
@@ -42,6 +45,8 @@ end
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
     local group = self.view
+
+    print('creating home')
 
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
@@ -107,6 +112,16 @@ function scene:enterScene( event )
 
     print("entering home")
 
+    
+    -- create a tab-bar and place it at the bottom of the screen
+    storyboard.state.demoTabs = widget.newTabBar{
+        top=display.contentHeight -50,
+        buttons=storyboard.state.tabButtons
+    }
+
+    storyboard.state.navBar.x = w*.5
+
+
     storyboard.state.navHeader.text = "Home"
     
     square1:addEventListener("tap",goToAccount)
@@ -124,8 +139,10 @@ end
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
     local group = self.view
-    print('exiting')
+    print('exiting home')
     storyboard.state.previousScene = "home"
+
+    storyboard.state.backBtn.x = 50
 
     square1:removeEventListener("tap",goToAccount)
     square2:removeEventListener("tap",goToSearch)
