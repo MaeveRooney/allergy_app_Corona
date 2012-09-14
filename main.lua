@@ -20,6 +20,13 @@ storyboard.state.tabButtons = {
         selected=true
     },
     {
+        label="My Account",
+        default="assets/tabIcon.png",
+        down="assets/tabIcon-down.png",
+        width=32, height=32,
+        onPress=function() storyboard.gotoScene( "account" ); end,
+    },
+    {
         label="Search",
         default="assets/tabIcon.png",
         down="assets/tabIcon-down.png",
@@ -27,11 +34,11 @@ storyboard.state.tabButtons = {
         onPress=function() storyboard.gotoScene( "search" ); end,
     },
     {
-        label="My Account",
+        label="Review",
         default="assets/tabIcon.png",
         down="assets/tabIcon-down.png",
         width=32, height=32,
-        onPress=function() storyboard.gotoScene( "account" ); end,
+        onPress=function() storyboard.gotoScene( "review" ); end,
     }
 }
 
@@ -72,7 +79,7 @@ storyboard.state.localBackBtn.x = -50
 -----------------------------DATABASE STUFF------------------------------------------
 require "sqlite3"
 
-local path = system.pathForFile( "test4.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test5.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local tablesetup1 = [[CREATE TABLE IF NOT EXISTS restaurant (id INTEGER PRIMARY KEY autoincrement, name text unique not null, avgYummy num, avgValue num, address text, image text, website text unique, wheatVoteNum int, wheatVotePercent num, glutenVoteNum int, glutenVotePercent num, dairyVoteNum int, dairyVotePercent num);]]

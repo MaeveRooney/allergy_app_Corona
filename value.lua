@@ -40,7 +40,7 @@ local screenOffsetW, screenOffsetH = w -  display.viewableContentWidth, h - disp
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test4.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test5.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local restaurantTableNew = {}  -- starts off emtpy

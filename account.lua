@@ -12,6 +12,8 @@ local tableView = require("tableView")
 
 --import the button events library
 local ui = require("ui")
+local tHeight       -- forward reference
+
 
 
 
@@ -35,10 +37,44 @@ local screenOffsetW, screenOffsetH = display.contentWidth -  display.viewableCon
 local sceneText, backBtn, userTable
 local w,h = display.contentWidth, display.contentHeight -50
 
+local inputFontSize = 18
+local inputFontHeight = 30
+tHeight = 30
+
+local function fieldHandler( event )
+
+    if ( "began" == event.phase ) then
+        -- This is the "keyboard has appeared" event
+        -- In some cases you may want to adjust the interface when the keyboard appears.
+    
+    elseif ( "ended" == event.phase ) then
+        -- This event is called when the user stops editing a field: for example, when they touch a different field
+    
+    elseif ( "submitted" == event.phase ) then
+        -- This event occurs when the user presses the "return" key (if available) on the onscreen keyboard
+        
+        -- Hide keyboard
+        native.setKeyboardFocus( nil )
+    end
+
+end
+
+local listener = function( event )
+    -- Hide keyboard
+    print("tap pressed")
+    native.setKeyboardFocus( nil )
+end
+
+
+-- Predefine local objects for use later
+local emailField, nameField, emailLabel, nameLabel, bkgd
+local fields = display.newGroup()
+
+
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test3.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test5.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 userTable = {}  -- starts off emtpy
@@ -83,7 +119,7 @@ end
 function saveChanges(event)
     print('changing')
     tapText.text = 'Changes Saved'
-    local q = [[UPDATE user SET name=']]..userTable[1].name..[[', email=']] ..userTable[1].email..[[', wheat=']] ..userTable[1].wheat.. [[', gluten=']] ..userTable[1].gluten.. [[', dairy=']] ..userTable[1].dairy.. [[' ;]]
+    local q = [[UPDATE user SET name=']]..nameField.text..[[', email=']] ..emailField.text..[[', wheat=']] ..userTable[1].wheat.. [[', gluten=']] ..userTable[1].gluten.. [[', dairy=']] ..userTable[1].dairy.. [[' ;]]
     db:exec( q )
 end
 
@@ -93,52 +129,56 @@ end
 function scene:createScene( event )
     local group = self.view
 
+    -------------------------------------------
+    -- *** Add field labels ***
+    -------------------------------------------
+
     local background = display.newRect(0, 0, w, h)
     background:setFillColor(255, 255, 255)
     group:insert(background)
 
-    userText = display.newText("", 0, 0, native.systemFontBold, 24)
-    userText:setTextColor(0, 0, 0)
-    userText.x = math.floor(w/2)
-    userText.y = math.floor(h/5)
-    group:insert(userText)
+    nameLabel = display.newText( "Name", 10, 60, native.systemFontBold, 24 )
+    nameLabel:setTextColor( 0,0,0 )
+    group:insert(nameLabel)
 
-    emailText = display.newText('', 0, 0, native.systemFontBold, 18)
-    emailText:setTextColor(0, 0, 0)
-    emailText.x = math.floor(w/2)
-    emailText.y = math.floor(h/3)
-    group:insert(emailText)
+    emailLabel = display.newText( "Email", 10, 130, native.systemFontBold, 24 )
+    emailLabel:setTextColor( 0,0,0 )
+    group:insert(emailLabel)
+
+    -------------------------------------------
+    -- *** Create Buttons ***
+    -------------------------------------------
 
     wheatText = display.newText("    Wheat Allergy:", 0, 0, native.systemFontBold, 16)
     wheatText:setTextColor(0, 0, 0)
-    wheatText.y = math.floor(h/2)
+    wheatText.y = math.floor(h/2) + 10
     group:insert(wheatText)
 
     wheatBool = display.newText('', 0, 0, native.systemFontBold, 16)
     wheatBool.x = math.floor(w/2) + 50
-    wheatBool.y = math.floor(h/2)
+    wheatBool.y = math.floor(h/2) + 10
     group:insert(wheatBool)
 
 
     glutenText = display.newText("    Gluten Allergy:", 0, 0, native.systemFontBold, 16)
     glutenText:setTextColor(0, 0, 0)
-    glutenText.y = math.floor(h/2) + 40
+    glutenText.y = math.floor(h/2) + 50
     group:insert(glutenText)
 
     glutenBool = display.newText("", 0, 0, native.systemFontBold, 16)
     glutenBool.x = math.floor(w/2) + 50
-    glutenBool.y = math.floor(h/2) + 40
+    glutenBool.y = math.floor(h/2) + 50
     group:insert(glutenBool)
 
 
     dairyText = display.newText("    Dairy Allery:", 0, 0, native.systemFontBold, 16)
     dairyText:setTextColor(0, 0, 0)
-    dairyText.y = math.floor(h/2) + 80
+    dairyText.y = math.floor(h/2) + 90
     group:insert(dairyText)
 
     dairyBool = display.newText('', 0, 0, native.systemFontBold, 16)
     dairyBool.x = math.floor(w/2) + 50
-    dairyBool.y = math.floor(h/2) + 80
+    dairyBool.y = math.floor(h/2) + 90
     group:insert(dairyBool)
 
 
@@ -181,7 +221,7 @@ function scene:enterScene( event )
 
     userTable = {}  -- starts off emtpy
 
-    for row in db:nrows("SELECT * FROM user where email = 'maeve.rooney@gmail.com'") do
+    for row in db:nrows("SELECT * FROM user") do
     -- create table at next available array index
     userTable[#userTable+1] =
         {
@@ -192,11 +232,6 @@ function scene:enterScene( event )
             dairy = row.dairy
         }
     end
-
-    print(userTable[1].name)
-
-    userText.text="User: "..userTable[1].name
-    emailText.text="Email: "..userTable[1].email
 
     glutenBool.text=userTable[1].gluten
     if userTable[1].gluten == "Yes" then
@@ -223,6 +258,41 @@ function scene:enterScene( event )
     end
 
 
+    nameField = native.newTextField( 10, 90, 300, tHeight, fieldHandler )
+    nameField.font = native.newFont( native.systemFont, inputFontSize )
+    nameField.text = userTable[1].name
+    nameField:setTextColor( 100,100,100 )
+    fields:insert(nameField)
+
+    emailField = native.newTextField( 10, 160, 300, tHeight, fieldHandler )
+    emailField.font = native.newFont( native.systemFont, inputFontSize )
+    emailField.inputType = "email"
+    emailField.text = userTable[1].email
+    emailField:setTextColor(100,100,100)
+    fields:insert(emailField)
+
+
+    -------------------------------------------
+    -- Create a Background touch event
+    -------------------------------------------
+
+    bkgd = display.newRect( 0, 0, display.contentWidth, display.contentHeight )
+    bkgd:setFillColor( 0, 0, 0, 0 )     -- set Alpha = 0 so it doesn't cover up our buttons/fields
+    local isSimulator = "simulator" == system.getInfo("environment")
+    if system.getInfo( "platformName" ) == "Mac OS X" then isSimulator = false; end
+
+    -- Native Text Fields not supported on Simulator
+    --
+    if isSimulator then
+        msg = display.newText( "Native Text Fields not supported on Simulator!", 0, 280, "Verdana-Bold", 12 )
+        msg.x = display.contentWidth/2      -- center title
+        msg:setTextColor( 255,255,0 )
+    end
+
+    -- Add listener to background for user "tap"
+    bkgd:addEventListener( "tap", listener )
+
+
     wheatBool:addEventListener("tap", changeWheatBool)
     dairyBool:addEventListener("tap", changeDairyBool)
     glutenBool:addEventListener("tap", changeGlutenBool)
@@ -236,6 +306,10 @@ function scene:exitScene()
     wheatBool:removeEventListener("tap", changeWheatBool)
     dairyBool:removeEventListener("tap", changeDairyBool)
     glutenBool:removeEventListener("tap", changeGlutenBool)
+    
+    bkgd:removeEventListener("tap", listener)
+    emailField:removeSelf()
+    nameField:removeSelf()
 
     storyboard.removeScene( "account" )
     storyboard.state.previousScene = "account"

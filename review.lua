@@ -16,6 +16,8 @@ local tableView = require("tableView")
 --import the button events library
 local ui = require("ui")
 
+local tHeight       -- forward reference
+
 
 
 ----------------------------------------------------------------------------------
@@ -48,10 +50,39 @@ table.indexOf = function( t, object )
     return result
 end
 
-local sceneText, backBtn, friendStarTable, yummyStarTable, valueStarTable, wheatOptions, glutenOptions, dairyOptions
-local w,h = display.contentWidth, display.contentHeight - 50
+local sceneText, backBtn, friendStarTable, yummyStarTable, valueStarTable, wheatOptions, glutenOptions, dairyOptions, reviewText, nameField, nameLabel, reviewField, reviewLabel
+local fields = display.newGroup()
 
-local restaurantNameDB, reviewTextDB, wheatVoteDB, glutenVoteDB, dairyVoteDB, friendRatingDB, yummyRatingDB, valueRatingDB
+local w,h = display.contentWidth, display.contentHeight - 50
+local inputFontSize = 18
+local inputFontHeight = 30
+tHeight = 30
+
+local function fieldHandler( event )
+
+    if ( "began" == event.phase ) then
+        -- This is the "keyboard has appeared" event
+        -- In some cases you may want to adjust the interface when the keyboard appears.
+    
+    elseif ( "ended" == event.phase ) then
+        -- This event is called when the user stops editing a field: for example, when they touch a different field
+    
+    elseif ( "submitted" == event.phase ) then
+        -- This event occurs when the user presses the "return" key (if available) on the onscreen keyboard
+        
+        -- Hide keyboard
+        native.setKeyboardFocus( nil )
+    end
+
+end
+
+local listener = function( event )
+    -- Hide keyboard
+    print("tap pressed")
+    native.setKeyboardFocus( nil )
+end
+
+local restaurantNameDB, reviewTextDB, wheatVoteDB, glutenVoteDB, dairyVoteDB, friendRatingDB, yummyRatingDB, valueRatingDB, glutenVoteNum, dairyVoteNum, wheatVoteNum
 wheatVoteDB = 0
 glutenVoteDB = 0
 dairyVoteDB = 0
@@ -59,7 +90,7 @@ dairyVoteDB = 0
 --load database
 require "sqlite3"
 
-local path = system.pathForFile( "test4.db", system.DocumentsDirectory )
+local path = system.pathForFile( "test5.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
 local function goHomeScreen()
@@ -161,15 +192,47 @@ end
 
 function saveChanges(event)
     print('saving changes')
+    if nameText.text ==  "" then
+        --error message
+        return
+    elseif reviewText.text == "" then
+        --error message
+        return
+    end
+    if getRestaurantId(nameText.text) == 0 then
+        print ('inserting')
+        local insertQuery = [[INSERT INTO restaurant(name, avgYummy, avgValue, address, image, website) VALUES(']] ..nameText.text.. [['0,0,'0','images/rest1.jpg','w'); ]]
+        db:exec( insertQuery )
+        print('done')
+    end
+end
+
+function getRestaurantId(name)
+    print('getting id')
+    local restaurant = {}
+    for row in db:nrows([[SELECT * FROM restaurant where name=']] ..name.. [[']]) do
+        restaurant[#restaurant+1] =
+        {
+            id = row.id,
+        }
+    end
+    if restaurant[1] then
+        print(restaurant[1].id)
+        return restaurant[1].id
+    else
+        return 0
+    end
 end
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
     local group = self.view
 
+    print('creating review')
+
     local topBoundary = display.screenOriginY
     local bottomBoundary = display.screenOriginY
-    local scrollView = scrollView.new{ top=topBoundary+40, bottom=bottomBoundary+60 }
+    local scrollView = scrollView.new{ top=topBoundary+40, bottom=bottomBoundary+70 }
 
     local scrollBackground = display.newRect(0, 0, w, h+64)
     scrollBackground:setFillColor(255, 255, 255)
@@ -179,21 +242,50 @@ function scene:createScene( event )
     background:setFillColor(255, 255, 255)
     group:insert(background)
 
-    restaurantName = display.newText("", 0, 0, native.systemFontBold, 18)
-    restaurantName:setTextColor(0, 0, 0)
-    restaurantName.x = math.floor(w/2)
-    restaurantName.y = 50
-    scrollView:insert(restaurantName)
+    nameLabel = display.newText( "Name of Restaurant", 10, 20, native.systemFontBold, 22 )
+    nameLabel:setTextColor( 0,0,0 )
+    scrollView:insert(nameLabel)
 
-    reviewText = display.newText('', 0, 0, native.systemFontBold, 18)
-    reviewText:setTextColor(0, 0, 0)
-    reviewText.x = math.floor(w/2)
-    reviewText.y = 100
+    reviewLabel = display.newText( "Your Review", 10, 95, native.systemFontBold, 22 )
+    reviewLabel:setTextColor( 0,0,0 )
+    scrollView:insert(reviewLabel)
+
+    nameField = display.newRect( 10, 50, 300, 30)
+    nameField.strokeWidth = 1
+    nameField:setStrokeColor(180, 180, 180)
+    scrollView:insert(nameField)
+
+    reviewField = display.newRect( 10, 130, 300, 120 )    -- x,y,w,h
+    reviewField:setFillColor( 255, 255, 255 )
+    reviewField.strokeWidth = 1
+    reviewField:setStrokeColor(180, 180, 180)
+    reviewField.x = w/2
+    reviewField.y = 185
+    reviewField.isEditable = true
+    scrollView:insert(reviewField)
+
+    nameText = native.newTextBox( 10, 50, 290, 25 )
+    nameText.text = "Tit this box."
+    nameText.x = w/2
+    nameText.y = 67
+    nameText:setTextColor(100,100,100)
+    nameText.size = 16
+    nameText.isEditable = true
+    scrollView:insert(nameText)
+
+    reviewText = native.newTextBox( 10, 130, 290, 120 )
+    reviewText.text = "This is information placed into the Text Box all on one line.\nThis is text forced to a new line.\nYou can now edit this box."
+    reviewText.x = w/2
+    reviewText.y = 185
+    reviewText:setTextColor(100,100,100)
+    reviewText.size = 16
+    reviewText.isEditable = true
     scrollView:insert(reviewText)
+
 
     friendText = display.newText("    Friendliness rating:", 0, 0, native.systemFontBold, 16)
     friendText:setTextColor(0, 0, 0)
-    friendText.y = 250
+    friendText.y = 280
     scrollView:insert(friendText)
 
     friendStarTable = {}
@@ -201,14 +293,14 @@ function scene:createScene( event )
     for i = 1, 5 do
         friendStarTable[i] = display.newText('*', 0, 0, native.systemFontBold, 40)
         friendStarTable[i]:setTextColor(150,150,150)
-        friendStarTable[i].x = math.floor(w/2) + 40 + 20*i
-        friendStarTable[i].y = 258
+        friendStarTable[i].x = math.floor(w/2) + 30 + 22*i
+        friendStarTable[i].y = 288
         scrollView:insert(friendStarTable[i])
     end
 
     yummyText = display.newText("    Yumminess Rating:", 0, 0, native.systemFontBold, 16)
     yummyText:setTextColor(0, 0, 0)
-    yummyText.y = 290
+    yummyText.y = 320
     scrollView:insert(yummyText)
 
     yummyStarTable = {}
@@ -216,14 +308,14 @@ function scene:createScene( event )
     for i = 1, 5 do
         yummyStarTable[i] = display.newText('*', 0, 0, native.systemFontBold, 40)
         yummyStarTable[i]:setTextColor(150,150,150)
-        yummyStarTable[i].x = math.floor(w/2) + 40 + 20*i
-        yummyStarTable[i].y = 298
+        yummyStarTable[i].x = math.floor(w/2) + 30 + 22*i
+        yummyStarTable[i].y = 328
         scrollView:insert(yummyStarTable[i])
     end
 
     valueText = display.newText("    Value for money:", 0, 0, native.systemFontBold, 16)
     valueText:setTextColor(0, 0, 0)
-    valueText.y = 330
+    valueText.y = 360
     scrollView:insert(valueText)
 
     valueStarTable = {}
@@ -231,26 +323,26 @@ function scene:createScene( event )
     for i = 1, 5 do
         valueStarTable[i] = display.newText('*', 0, 0, native.systemFontBold, 40)
         valueStarTable[i]:setTextColor(150,150,150)
-        valueStarTable[i].x = math.floor(w/2) + 40 + 20*i
-        valueStarTable[i].y = 338
+        valueStarTable[i].x = math.floor(w/2) + 30 + 22*i
+        valueStarTable[i].y = 368
         scrollView:insert(valueStarTable[i])
     end
 
     allergyHeader = display.newText("Does this restaurant cater", 0, 0, native.systemFontBold, 18)
     allergyHeader:setTextColor(0, 0, 0)
     allergyHeader.x = math.floor(w/2)
-    allergyHeader.y = 400
+    allergyHeader.y = 410
     scrollView:insert(allergyHeader)
 
     allergyHeader2 = display.newText("to the following allergies?", 0, 0, native.systemFontBold, 18)
     allergyHeader2:setTextColor(0, 0, 0)
     allergyHeader2.x = math.floor(w/2)
-    allergyHeader2.y = 420
+    allergyHeader2.y = 430
     scrollView:insert(allergyHeader2)
 
     wheatText = display.newText("    Wheat:", 0, 0, native.systemFontBold, 16)
     wheatText:setTextColor(0, 0, 0)
-    wheatText.y = 460
+    wheatText.y = 470
     scrollView:insert(wheatText)
     scrollView:addScrollBar()
 
@@ -264,14 +356,14 @@ function scene:createScene( event )
     wheatOptions[3].x = 250
 
     for i = 1, 3 do
-        wheatOptions[i].y = 460
+        wheatOptions[i].y = 470
         wheatOptions[i]:setTextColor(150,150,150)
         scrollView:insert(wheatOptions[i])
     end
 
     glutenText = display.newText("    Gluten:", 0, 0, native.systemFontBold, 16)
     glutenText:setTextColor(0, 0, 0)
-    glutenText.y = 500
+    glutenText.y = 510
     scrollView:insert(glutenText)
 
     glutenOptions = {}
@@ -284,14 +376,14 @@ function scene:createScene( event )
     glutenOptions[3].x = 250
 
     for i = 1, 3 do
-        glutenOptions[i].y = 500
+        glutenOptions[i].y = 510
         glutenOptions[i]:setTextColor(150,150,150)
         scrollView:insert(glutenOptions[i])
     end
 
     dairyText = display.newText("    Dairy:", 0, 0, native.systemFontBold, 16)
     dairyText:setTextColor(0, 0, 0)
-    dairyText.y = 540
+    dairyText.y = 550
     scrollView:insert(dairyText)
 
     dairyOptions = {}
@@ -304,7 +396,7 @@ function scene:createScene( event )
     dairyOptions[3].x = 250
 
     for i = 1, 3 do
-        dairyOptions[i].y = 540
+        dairyOptions[i].y = 550
         dairyOptions[i]:setTextColor(150,150,150)
         scrollView:insert(dairyOptions[i])
     end
@@ -318,7 +410,7 @@ function scene:createScene( event )
     }
     scrollView:insert(saveButton)
     saveButton.x = 160
-    saveButton.y = 600
+    saveButton.y = 610
 
 
     group:insert(scrollView)
@@ -337,15 +429,11 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
     local group = self.view
-    print('entering')
+    print('entering review')
 
     storyboard.state.navHeader.text = "       Review An Eatery"
 
     storyboard.state.backBtn.alpha = 1
-
-
-    restaurantName.text="Input for restraunt name goes here"
-    reviewText.text="Review text input box goes here"
 
     for i = 1, 5 do
         friendStarTable[i]:addEventListener("tap", rateFriendliness)
@@ -367,6 +455,27 @@ function scene:enterScene( event )
     for i = 1, 3 do
         dairyOptions[i]:addEventListener("tap", rateDairy)
     end
+
+    -------------------------------------------
+    -- Create a Background touch event
+    -------------------------------------------
+
+    bkgd = display.newRect( 0, 0, display.contentWidth, display.contentHeight )
+    bkgd:setFillColor( 0, 0, 0, 0 )     -- set Alpha = 0 so it doesn't cover up our buttons/fields
+    local isSimulator = "simulator" == system.getInfo("environment")
+    if system.getInfo( "platformName" ) == "Mac OS X" then isSimulator = false; end
+
+    -- Native Text Fields not supported on Simulator
+    --
+    if isSimulator then
+        msg = display.newText( "Native Text Fields not supported on Simulator!", 0, 280, "Verdana-Bold", 12 )
+        msg.x = display.contentWidth/2      -- center title
+        msg:setTextColor( 255,255,0 )
+    end
+
+    -- Add listener to background for user "tap"
+    bkgd:addEventListener( "tap", listener )
+
 
 end
 
@@ -395,8 +504,15 @@ function scene:exitScene()
     for i = 1, 3 do
         dairyOptions[i]:removeEventListener("tap", rateDairy)
     end
-        
-    storyboard.purgeScene( "account" )
+
+    bkgd:removeEventListener("tap", listener)
+    nameText:removeSelf()
+    reviewText:removeSelf()
+
+    storyboard.state.previousScene = "review"
+
+
+    storyboard.removeScene( "review" )
 
 
 end
